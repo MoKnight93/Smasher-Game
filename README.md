@@ -1,4 +1,4 @@
-# 🥊 Smacher
+# Smacher
 
 A fun, cartoony, desktop-only web game. Smash bugs, smash your own logos, or beat up a goofy ragdoll buddy with a huge arsenal of silly weapons. No blood, no installs, no dependencies: it's a single `index.html` file.
 
@@ -47,7 +47,7 @@ Three ways:
 3. Put images in a `logos/` folder next to `index.html` and list them at the top of the script:
 
    ```js
-   const LOGO_FILES = ['logos/a.png', 'logos/b.svg'];
+   const LOGO_FILES = ['./Assets/Images/logo.png', './Assets/Images/logo.svg'];
    ```
 
 Click **🕷️ USE SPIDERS** to go back to the default spiders.
@@ -59,16 +59,7 @@ Click **🕷️ USE SPIDERS** to go back to the default spiders.
 - The buddy is a Verlet-integration ragdoll with distance constraints and posture springs.
 - Settings (best score, selected weapons) are saved in `localStorage`.
 
-## Run / host it
-
-- **Locally:** double-click `index.html`.
-- **GitHub Pages:** push the repo, then go to *Settings → Pages*, choose the `main` branch and `/ (root)`. Your game will be live at `https://<your-username>.github.io/<repo-name>/`.
-
 ## Notes
 
 - Desktop only (it needs a mouse with a wheel and right button).
 - This is a fan-made fun project. If you use logos you don't own, keep it for personal use.
-
-## License
-
-Add the license you prefer (for example MIT) as a `LICENSE` file.
