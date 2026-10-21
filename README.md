@@ -1,4 +1,4 @@
-# Smacher
+# Smasher
 
 A fun, cartoony, desktop-only web game. Smash bugs, smash your own logos, or beat up a goofy ragdoll buddy with a huge arsenal of silly weapons. No blood, no installs, no dependencies: it's a single `index.html` file.
 
