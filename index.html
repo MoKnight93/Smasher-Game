@@ -662,7 +662,7 @@
 
   <script>
     /* ================================================================
-      SMASHER
+       SMASHER
        ----------------------------------------------------------------
        TARGETS: by default the targets are colorful spiders.
        To use YOUR OWN logos instead (two ways):
@@ -1431,7 +1431,8 @@
     const B_LIMBS = new Set([B_HIP + '-' + B_KNL, B_KNL + '-' + B_FTL, B_HIP + '-' + B_KNR, B_KNR + '-' + B_FTR, B_NECK + '-' + B_ELL, B_ELL + '-' + B_HAL, B_NECK + '-' + B_ELR, B_ELR + '-' + B_HAR]);
     const B_SKIN = '#ffcf9f', B_SHIRT = '#4aa8ff', B_PANTS = '#3b4a8f', B_SHOE = '#e8392b', B_HAIR = '#6b3f1d';
     const SD = 1 / 120;                                           // physics sub-step
-    let bud = null, damageTotal = 0, headIdx = 0;
+    let bud = null, damageTotal = 0, headIdx = 0, bestBuddy = 0;
+    try { bestBuddy = +localStorage.getItem('smacherBestBuddy') || 0; } catch (e) { }
 
     /* ---------- room geometry ---------- */
     function roomGeo() { const wb = Math.round(H * .58); const gy = Math.max(wb + 60, Math.round(Math.min(H - 225, H * .76))); return { wb, gy }; }
@@ -1481,6 +1482,34 @@
       }
       const sh = g.createLinearGradient(0, wb + 10, 0, wb + 70); sh.addColorStop(0, 'rgba(0,0,0,.32)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
       g.fillStyle = sh; g.fillRect(0, wb + 10, W, 60);
+      const { gy } = roomGeo();
+      // rug
+      g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(W / 2, gy + 14, 330, 52, 0, 0, 7); g.fill();
+      g.fillStyle = '#b8453a'; g.strokeStyle = INK; g.lineWidth = 4; g.beginPath(); g.ellipse(W / 2, gy + 8, 320, 46, 0, 0, 7); g.fill(); g.stroke();
+      g.strokeStyle = '#ffd98a'; g.lineWidth = 4; g.beginPath(); g.ellipse(W / 2, gy + 8, 290, 38, 0, 0, 7); g.stroke();
+      g.strokeStyle = 'rgba(255,217,138,.5)'; g.beginPath(); g.ellipse(W / 2, gy + 8, 230, 28, 0, 0, 7); g.stroke();
+      // wall clock
+      g.fillStyle = '#fff'; g.strokeStyle = INK; g.lineWidth = 5; g.beginPath(); g.arc(W * .5, wb * .2, 34, 0, 7); g.fill(); g.stroke();
+      g.lineWidth = 3; g.beginPath(); g.moveTo(W * .5, wb * .2); g.lineTo(W * .5, wb * .2 - 22); g.moveTo(W * .5, wb * .2); g.lineTo(W * .5 + 15, wb * .2 + 6); g.stroke();
+      for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; g.beginPath(); g.moveTo(W * .5 + Math.cos(a) * 27, wb * .2 + Math.sin(a) * 27); g.lineTo(W * .5 + Math.cos(a) * 31, wb * .2 + Math.sin(a) * 31); g.stroke(); }
+      // floor lamp (left)
+      {
+        const lx = Math.max(60, W * .05);
+        g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.ellipse(lx, gy + 6, 36, 8, 0, 0, 7); g.fill();
+        g.strokeStyle = INK; g.lineWidth = 8; g.beginPath(); g.moveTo(lx, gy); g.lineTo(lx, gy - 210); g.stroke(); g.strokeStyle = '#8b5a2b'; g.lineWidth = 4; g.stroke();
+        g.fillStyle = '#6e4220'; g.beginPath(); g.ellipse(lx, gy, 26, 8, 0, 0, 7); g.fill(); g.lineWidth = 4; g.strokeStyle = INK; g.stroke();
+        g.fillStyle = '#ffe9a8'; g.lineWidth = 4; g.beginPath(); g.moveTo(lx - 34, gy - 190); g.lineTo(lx + 34, gy - 190); g.lineTo(lx + 20, gy - 250); g.lineTo(lx - 20, gy - 250); g.closePath(); g.fill(); g.stroke();
+        const gl = g.createRadialGradient(lx, gy - 210, 10, lx, gy - 210, 200); gl.addColorStop(0, 'rgba(255,230,150,.28)'); gl.addColorStop(1, 'rgba(255,230,150,0)'); g.fillStyle = gl; g.fillRect(lx - 200, gy - 410, 400, 400);
+      }
+      // potted plant (right)
+      {
+        const px = Math.min(W - 60, W * .94);
+        g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.ellipse(px, gy + 6, 46, 9, 0, 0, 7); g.fill();
+        g.strokeStyle = INK; g.lineWidth = 4; g.fillStyle = '#4fae5a';
+        for (const [dx, dy, r, rt] of [[-26, -130, 18, -.8], [26, -136, 18, .8], [0, -168, 20, 0], [-34, -96, 16, -1.1], [34, -100, 16, 1.1]]) { g.beginPath(); g.ellipse(px + dx, gy + dy, r, r * 2, rt, 0, 7); g.fill(); g.stroke(); }
+        g.fillStyle = '#c4622d'; g.beginPath(); g.moveTo(px - 34, gy - 66); g.lineTo(px + 34, gy - 66); g.lineTo(px + 26, gy); g.lineTo(px - 26, gy); g.closePath(); g.fill(); g.stroke();
+        g.fillStyle = '#d97a3f'; g.fillRect(px - 38, gy - 76, 76, 14); g.strokeRect(px - 38, gy - 76, 76, 14);
+      }
       const v = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .78);
       v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(30,10,0,.45)'); g.fillStyle = v; g.fillRect(0, 0, W, H);
     }
@@ -1508,7 +1537,7 @@
     }
     function buddyReset(soft) {
       if (soft && bud) { Object.assign(bud, { soot: 0, bumps: [], patches: [], arrows: [], burn: 0, gas: 0, frizz: 0, frozen: 0, zapT: 0, ko: 0, stand: 0, hurt: 0, shiver: 0 }); sfx.arm(); return; }
-      const U = unitU(), g = roomGeo(), custom = logoImgs.length > 0, hr = custom ? 74 : 56;
+      const U = unitU(), g = roomGeo(), custom = logoImgs.length > 0, hr = custom ? 62 : 56;
       const rest = B_REST.map(([x, y], i) => [x * U, (i === B_HEAD ? -(92 + hr * .88) : y) * U]);
       const hx = W / 2, hy = g.gy - rest[B_FTL][1];
       const pts = rest.map(([x, y], i) => ({ x: hx + x, y: hy + y, px: hx + x, py: hy + y, r: (i === B_HEAD ? hr : B_RAD[i]) * U, w: B_MASS[i] }));
@@ -1530,10 +1559,20 @@
       }
       const s = b.stand, hip = Q[B_HIP];
       if (s > 0) {                                       // active posture: he tries to stand up and balance
+        const sk = s * s * (3 - 2 * s), soft = b.soft || 0, tt = performance.now() / 1000, calm = b.ko <= 0 && !b.grab;
+        const lookX = calm ? clamp((mouse.x - Q[B_HEAD].x) * .035, -16 * U, 16 * U) : 0;
         for (const i of B_POSE) {
           if (!b.att[i]) continue;
-          const p = Q[i], k = (i === B_HEAD || i === B_NECK ? .06 : .035) * s;
-          p.x += (hip.x + b.rest[i][0] - p.x) * k; p.y += (hip.y + b.rest[i][1] - p.y) * k;
+          const p = Q[i];
+          const base = i === B_NECK ? .06 : i === B_HEAD ? .03 : (i === B_ELL || i === B_ELR || i === B_HAL || i === B_HAR) ? .013 : i === B_FTL || i === B_FTR ? .05 : .035;
+          const k = base * sk * (1 - .6 * soft);
+          let tx = hip.x + b.rest[i][0], ty = hip.y + b.rest[i][1];
+          if (calm) {
+            const br = Math.sin(tt * 2.2) * 1.6 * U, sw = Math.sin(tt * .9) * 4 * U;
+            if (i === B_HEAD) { tx += lookX + sw * .6; ty += br; } else if (i === B_NECK) { tx += sw * .4; ty += br * .6; }
+            else if (i === B_HAL || i === B_HAR || i === B_ELL || i === B_ELR) { ty += br * .8; tx += sw * .5 * (i === B_HAL || i === B_ELL ? 1 : -1) * .5; }
+          }
+          p.x += (tx - p.x) * k; p.y += (ty - p.y) * k;
         }
         if ((b.att[B_FTL] && Q[B_FTL].y > g.gy - 30 * U) || (b.att[B_FTR] && Q[B_FTR].y > g.gy - 30 * U)) {
           const ty = g.gy - b.rest[B_FTL][1]; if (hip.y > ty) hip.y += (ty - hip.y) * .07 * s;
@@ -1564,7 +1603,7 @@
         else if (p.x > W - r) { const vx = p.x - p.px; p.x = W - r; p.px = p.x + vx * RS; if (vx / SD > 700 * U) slam = slam || { p, sp: vx / SD, wall: true }; }
         if (p.y < r) { const vy = p.y - p.py; p.y = r; p.py = p.y + vy * RS; if (-vy / SD > 700 * U) slam = slam || { p, sp: -vy / SD, wall: true }; }
       }
-      if (slam && b.imp <= 0 && !b.grab && !b.flee) buddyImpact(slam.p, slam.sp, slam.wall);
+      if (slam && b.imp <= 0 && (b.grab || (b.burn <= 0 && b.zapT <= 0))) buddyImpact(slam.p, slam.sp, slam.wall);
     }
     function buddyImpact(p, speed, wall) {
       const b = bud, U = b.U, sp = speed / U; b.imp = .3;
@@ -1623,11 +1662,12 @@
         const m = Math.hypot(ux, uy) || 1, sp = power * k;
         addVel(i, ux / m * sp, uy / m * sp); peak = Math.max(peak, sp);
       }
+      if (peak > 300 * b.U) b.soft = Math.max(b.soft || 0, Math.min(1, peak / (1400 * b.U)));
       if (peak > 1000 * b.U) bKO(.5 + peak / (2600 * b.U));
       return peak;
     }
     function bBump(h, x, y) {
-      if (!h || !h.head) return; const b = bud, H0 = b.p[B_HEAD];
+      if (!h || !h.head || logoImgs.length) return; const b = bud, H0 = b.p[B_HEAD];
       if (b.bumps.length >= 3) b.bumps.shift();
       b.bumps.push(Math.atan2(y - H0.y, x - H0.x) - bHeadAng());
     }
@@ -1653,18 +1693,25 @@
       const b = bud; if (!b || bHeavy(x, y)) return;
       const R = WEAPONS.shoe.r, h = bHit(x, y, R); if (!h) return;
       bImpulse(x, y, R * 1.5, 950 * b.U, { up: .5 }); bBump(h, x, y); bHurt(); if (!h.head) bPatch(h, 'print', h.qx, h.qy, rand(-.4, .4));
+      const g = roomGeo(); puff(h.qx, g.gy, 8, '#eadbb7', 220, 16 * b.U, .5); ring(h.qx, g.gy + 6, 'rgba(255,255,255,.7)', 260, .3, 6);
+      addVel(B_HEAD, 0, 420 * b.U); after(.13, () => { if (bud) { addVel(B_HIP, 0, -1000 * bud.U); addVel(B_HEAD, 0, -500 * bud.U); } });     // squashed, then he pops back up
       bScore(40, x, y, pick(['STOMP!', 'SPLAT!', 'OOF!']), '#fff'); bSay(pick(['OW!', 'HEY!', 'OOF!']));
     }
     function bSwat(x, y) {
       const b = bud; if (!b || b.frozen > 0) return;
       const R = WEAPONS.swatter.r, h = bHit(x, y, R); if (!h) return;
       bImpulse(x, y, R * 1.6, 800 * b.U, { up: .25 }); bBump(h, x, y); bHurt(.5); if (!h.head) bPatch(h, 'grid', h.qx, h.qy, rand(-.4, .4));
+      const sd = Math.sign(h.qx - x) || 1; addVel(B_HEAD, sd * 520 * b.U, -220 * b.U); addVel(B_HIP, -sd * 320 * b.U, -80 * b.U);   // spins him round
       bScore(28, x, y, 'THWACK!', '#fff'); bSay(pick(['OW!', 'HEY!', 'STOP IT!']));
     }
     function bHammer(x, y) {
       const b = bud; if (!b || bHeavy(x, y)) return;
       const R = WEAPONS.hammer.r, h = bHit(x, y, R); if (!h) return;
       bImpulse(x, y, R * 1.8, 1700 * b.U, { up: .55 }); bBump(h, x, y); bHurt(1); stars(h.qx, h.qy, 6); if (!h.head) bPatch(h, 'dent', h.qx, h.qy, 0);
+      {
+        const g = roomGeo(); cracks(h.qx, g.gy + 14, 110 * b.U); ring(h.qx, g.gy + 8, '#ffd93d', 380, .4, 8); puff(h.qx, g.gy, 10, '#eadbb7', 260, 18 * b.U, .6);
+        for (let i = 0; i < b.p.length; i++) addVel(i, 0, -380 * b.U);
+      }                                  // shockwave makes him hop
       if (h.head) bKO(.9);
       bScore(85, x, y, pick(['BONK!', 'WHAM!', 'SMASH!']), '#ffd93d'); bSay(pick(['MY HEAD!', 'OUCH!!', 'WHY?!']), true);
     }
@@ -1865,7 +1912,7 @@
       const b = bud; if (!b) return;
       const U = b.U, Q = b.p, hip = Q[B_HIP], onG = bOnGround();
       b.say = Math.max(0, b.say - dt); b.hurt = Math.max(0, b.hurt - sdt); b.imp = Math.max(0, b.imp - sdt);
-      b.slashCd = Math.max(0, b.slashCd - sdt); b.suck = Math.max(0, b.suck - sdt); b.hsq = Math.max(0, b.hsq - sdt * 4.5);
+      b.slashCd = Math.max(0, b.slashCd - sdt); b.suck = Math.max(0, b.suck - sdt); b.hsq = Math.max(0, b.hsq - sdt * 4.5); b.soft = Math.max(0, (b.soft || 0) - sdt * 1.5);
       b.afraid = 0; b.flee = 0;
       if (b.grab && b.grab.vac && !(state === 'play' && mouse.down && curId() === 'vacuum')) bDrop();
       for (let i = 0; i < Q.length; i++) if (!b.att[i]) { const vx = Q[i].x - Q[i].px, vy = Q[i].y - Q[i].py; if (vx * vx + vy * vy > 4) b.sa[i] = Math.atan2(-vy, -vx); }
@@ -1876,7 +1923,7 @@
       if (b.frozen > 0) { b.frozen -= sdt; if (b.frozen <= 0) bThaw(); }
       else if (b.grab) { b.stand = 0; b.ko = 0; }
       else if (b.ko > 0) { b.ko -= sdt; b.stand = 0; }
-      else if (b.suck <= 0) b.stand = Math.min(1, b.stand + sdt * .8);
+      else if (b.suck <= 0) b.stand = Math.min(1, b.stand + sdt * .55);
 
       if (b.burn > 0 && b.frozen <= 0) {
         b.burn -= sdt; b.soot = Math.min(.85, b.soot + sdt * .2);
@@ -2061,7 +2108,7 @@
       }
       if (custom) {
         const img = logoImgs[headIdx % logoImgs.length], iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
-        const k = (R * 2.3) / Math.max(iw, ih), w = iw * k, h2 = ih * k;
+        const k = (R * 2.1) / Math.max(iw, ih), w = iw * k, h2 = ih * k;
         ctx.shadowColor = 'rgba(0,0,0,.28)'; ctx.shadowOffsetY = 5 * U; ctx.shadowBlur = 0;
         if (soot > 0 || ovc) {
           tctx.setTransform(1, 0, 0, 1, 0, 0); tctx.clearRect(0, 0, 300, 300);
@@ -2092,7 +2139,7 @@
           ctx.strokeStyle = '#222'; ctx.lineWidth = 3 * U; ctx.beginPath(); ctx.moveTo(-R * .4, R * .55); ctx.lineTo(R * .4, R * .55); for (let i = -3; i <= 3; i++) { ctx.moveTo(i * R * .12, R * .45); ctx.lineTo(i * R * .12, R * .65); } ctx.stroke();
         } else bFace(R, mood, lx, ly, b.blink < 0, t);
       }
-      for (const a of b.bumps) {
+      for (const a of (custom ? [] : b.bumps)) {
         const bx = Math.cos(a) * R * .86, by = Math.sin(a) * R * .86;
         ctx.fillStyle = C('#ffa35c'); ctx.strokeStyle = ink; ctx.lineWidth = 3 * U; ctx.beginPath(); ctx.arc(bx, by, R * .27, 0, 7); ctx.fill(); ctx.stroke();
         ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(bx - R * .08, by - R * .08, R * .07, 0, 7); ctx.fill();
@@ -2760,11 +2807,10 @@
       if (chg('mode', mode)) {
         $('scoreBox').style.visibility = (sc || bd) ? 'visible' : 'hidden';
         $('lbl1').textContent = bd ? 'DAMAGE' : 'SCORE';
-        $('lb2').parentElement.style.visibility = bd ? 'hidden' : 'visible';
         $('modeTag').textContent = bd ? '🥊 BUDDY  •  F = NEW BUDDY  •  P = MENU' : sc ? 'P = MENU' : '♾️ ENDLESS  •  P = MENU';
       }
       if (sc) { if (chg('score', score)) $('score').textContent = score; if (chg('best', best)) $('best').textContent = best; }
-      else if (bd) { const d = Math.round(damageTotal); if (chg('score', d)) $('score').textContent = d; }
+      else if (bd) { const d = Math.round(damageTotal), bb = Math.max(bestBuddy, d); if (chg('score', d)) $('score').textContent = d; if (chg('best', bb)) $('best').textContent = bb; }
       const hearts = sc ? '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(Math.max(0, START_LIVES - lives)) : '';
       if (chg('lives', hearts)) $('lives').textContent = hearts;
       const on = combo >= 2; if (chg('on', on)) $('comboBox').classList.toggle('on', on);
@@ -2803,6 +2849,7 @@
       showTip();
     }
     function saveBest() {
+      if (mode === 'buddy' && damageTotal > bestBuddy) { bestBuddy = Math.round(damageTotal); try { localStorage.setItem('smacherBestBuddy', bestBuddy); } catch (e) { } }
       if (mode === 'score' && score > best) { best = score; try { localStorage.setItem('logoSmasherBest', best); } catch (e) { } }
     }
     function gameOver() {
